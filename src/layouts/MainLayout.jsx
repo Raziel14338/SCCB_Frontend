@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 /**
@@ -20,6 +20,12 @@ function MainLayout() {
     <div className="app-shell">
       <header className="app-header">
         <span className="app-header__marca">Gestión de Hidrocarburos</span>
+
+        <nav className="app-header__nav">
+          <Link to="/dashboard">Panel de Control</Link>
+          <Link to="/alertas">Alertas</Link>
+          {/* Los módulos 3-6 agregan su propio link aquí */}
+        </nav>
 
         <div className="app-header__usuario">
           <span className="app-header__nombre">{usuario?.nombreCompleto}</span>

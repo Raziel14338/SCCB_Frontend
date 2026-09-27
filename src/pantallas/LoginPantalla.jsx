@@ -22,18 +22,8 @@ function LoginPantalla() {
     evento.preventDefault();
     setEnviando(true);
     try {
-      const usuario = await login(nombreUsuario, password);
-      // Cada rol aterriza en su propio panel. Ajustar las rutas cuando
-      // se definan las pantallas reales en los módulos 2+.
-      if (usuario.esAdminRed()) {
-        navigate("/admin/dashboard");
-      } else if (usuario.esFiscalAnh()) {
-        navigate("/fiscalizacion/dashboard");
-      } else if (usuario.esOperadorYpfb()) {
-        navigate("/operador/dashboard");
-      } else {
-        navigate("/");
-      }
+      await login(nombreUsuario, password);
+      navigate("/dashboard");
     } catch {
       // El mensaje de error ya quedó disponible en `error` desde el contexto
     } finally {

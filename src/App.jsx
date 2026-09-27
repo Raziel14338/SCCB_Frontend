@@ -5,6 +5,8 @@ import MainLayout from "./layouts/MainLayout";
 import { ROLES } from "./models/Usuario";
 
 import LoginPantalla from "./pantallas/LoginPantalla";
+import DashboardPantalla from "./pantallas/dashboard/DasboardPantalla";
+import AlertasPantalla from "./pantallas/alertas/AlertasPantalla";
 
 // Pantallas de los módulos 2+. Por ahora son placeholders: se
 // reemplazan por las pantallas reales a medida que avanzamos módulo
@@ -43,6 +45,10 @@ function App() {
               </RutaProtegida>
             }
           >
+            {/* ── Módulo 2: accesible a cualquier usuario autenticado ── */}
+            <Route path="/dashboard" element={<DashboardPantalla />} />
+            <Route path="/alertas" element={<AlertasPantalla />} />
+
             {/* ── ADMIN_RED ── */}
             <Route
               path="/admin/dashboard"
