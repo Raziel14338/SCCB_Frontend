@@ -13,6 +13,7 @@ import AlertasPantalla from "./pantallas/alertas/AlertasPantalla";
 // por módulo, sin tocar la estructura de rutas de abajo.
 import AdminDashboard from "./pantallas/admin/Admindasboard";
 import FiscalizacionDashboard from "./pantallas/fiscalizacion/Fiscalizaciondashboard";
+import GestionCupos from "./pantallas/fiscalizacion/GestionCupos";
 import OperadorDashboard from "./pantallas/operador/Operadordashboard";
 
 /**
@@ -65,6 +66,14 @@ function App() {
               element={
                 <RutaProtegida roles={[ROLES.FISCAL_ANH]}>
                   <FiscalizacionDashboard />
+                </RutaProtegida>
+              }
+            />
+            <Route
+              path="/fiscalizacion/cupos"
+              element={
+                <RutaProtegida roles={[ROLES.FISCAL_ANH]}>
+                  <GestionCupos />
                 </RutaProtegida>
               }
             />
