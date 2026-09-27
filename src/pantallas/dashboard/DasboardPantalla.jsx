@@ -84,7 +84,6 @@ function DashboardPantalla() {
             de merma total
           </span>
         </div>
-
         <BarChart
           datos={datosGrafico}
           colorBarra="#f87171"

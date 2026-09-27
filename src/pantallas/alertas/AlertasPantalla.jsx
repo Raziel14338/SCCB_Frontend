@@ -6,7 +6,10 @@ import { useAuth } from "../../context/AuthContext";
 const alertasService = new AlertasService();
 
 const FILTROS_ESTADO = [
-  { label: "Activas (abiertas + en revisión)", value: [ESTADOS_ALERTA.ABIERTA, ESTADOS_ALERTA.EN_REVISION] },
+  {
+    label: "Activas (abiertas + en revisión)",
+    value: [ESTADOS_ALERTA.ABIERTA, ESTADOS_ALERTA.EN_REVISION],
+  },
   { label: "Abiertas", value: [ESTADOS_ALERTA.ABIERTA] },
   { label: "En revisión", value: [ESTADOS_ALERTA.EN_REVISION] },
   { label: "Resueltas", value: [ESTADOS_ALERTA.RESUELTA] },
