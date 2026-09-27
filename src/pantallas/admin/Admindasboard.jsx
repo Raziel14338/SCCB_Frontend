@@ -4,28 +4,32 @@ import AuthService from "../../services/AuthService";
 import UsuariosService from "../../services/Usuarioservice";
 import ConductorService from "../../services/Conductorservice";
 import VehiculoService from "../../services/Vehiculoservice";
+import CisternaService from "../../services/CisternasService";
 import { ROLES } from "../../models/Usuario";
 import { TIPOS_VEHICULO, ESTADOS_VEHICULO } from "../../models/Vehiculo";
+import { ESTADOS_CISTERNA } from "../../models/Cisterna";
 
 const authService = AuthService.getInstance();
 const usuariosService = new UsuariosService();
 const conductorService = new ConductorService();
 const vehiculoService = new VehiculoService();
+const cisternaService = new CisternaService();
 
 const TABS = [
   { id: "usuarios", label: "Usuarios" },
   { id: "conductores", label: "Conductores" },
   { id: "vehiculos", label: "Vehículos" },
+  { id: "flota", label: "Flota (Cisternas)" },
 ];
 
 /**
  * AdminDashboard — Panel de Administración (ADMIN_RED)
  * ------------------------------------------------------------------
- * Tres pestañas independientes (usuarios / conductores / vehículos),
- * cada una con su propio estado de listado + formulario de alta.
- * Cada pestaña carga sus datos recién al activarse por primera vez
- * (no se piden los tres listados de una — el admin puede no
- * necesitar los tres en la misma visita).
+ * Cuatro pestañas independientes (usuarios / conductores / vehículos
+ * / flota), cada una con su propio estado de listado + formulario de
+ * alta. Cada pestaña carga sus datos recién al activarse por primera
+ * vez (no se piden los cuatro listados de una — el admin puede no
+ * necesitar los cuatro en la misma visita).
  */
 function AdminDashboard() {
   const { logout } = useAuth();
@@ -53,6 +57,7 @@ function AdminDashboard() {
       {tabActiva === "usuarios" && <TabUsuarios />}
       {tabActiva === "conductores" && <TabConductores />}
       {tabActiva === "vehiculos" && <TabVehiculos />}
+      {tabActiva === "flota" && <TabFlota />}
     </div>
   );
 }
@@ -552,6 +557,213 @@ function TabVehiculos() {
                 </td>
               </tr>
             ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
+
+// ------------------------------------------------------------------
+// Flota (Cisternas)
+// ------------------------------------------------------------------
+
+const FORM_CISTERNA_INICIAL = {
+  placa: "",
+  rfidTag: "",
+  empresaTransporte: "",
+  capacidadTotal: "",
+  sensorIotId: "",
+};
+
+function TabFlota() {
+  const [cisternas, setCisternas] = useState(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(null);
+  const [actualizandoPlaca, setActualizandoPlaca] = useState(null);
+
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [form, setForm] = useState(FORM_CISTERNA_INICIAL);
+  const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState(null);
+
+  // Última telemetría consultada, por placa — se pide bajo demanda
+  // (no de entrada para las N cisternas del listado) para no
+  // disparar N requests solo por abrir la pestaña.
+  const [telemetriaPorPlaca, setTelemetriaPorPlaca] = useState({});
+  const [consultandoPlaca, setConsultandoPlaca] = useState(null);
+
+  const cargar = async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      setCisternas(await cisternaService.listar());
+    } catch {
+      setError("No se pudieron cargar las cisternas.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  if (cisternas === null && !cargando && !error) {
+    cargar();
+  }
+
+  const actualizarCampo = (campo) => (e) =>
+    setForm((prev) => ({ ...prev, [campo]: e.target.value }));
+
+  const crearCisterna = async (evento) => {
+    evento.preventDefault();
+    setGuardando(true);
+    setErrorForm(null);
+    try {
+      await cisternaService.registrar({
+        ...form,
+        capacidadTotal: Number(form.capacidadTotal),
+      });
+      setForm(FORM_CISTERNA_INICIAL);
+      setMostrarForm(false);
+      cargar();
+    } catch (err) {
+      setErrorForm(err.mensaje || "No se pudo registrar la cisterna.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const cambiarEstado = async (cisterna, nuevoEstado) => {
+    setActualizandoPlaca(cisterna.placa);
+    try {
+      const actualizada = await cisternaService.actualizarEstado(cisterna.placa, nuevoEstado);
+      setCisternas((prev) =>
+        prev.map((c) => (c.placa === actualizada.placa ? actualizada : c))
+      );
+    } catch {
+      setError(`No se pudo actualizar la cisterna ${cisterna.placa}.`);
+    } finally {
+      setActualizandoPlaca(null);
+    }
+  };
+
+  const verUltimaTelemetria = async (placa) => {
+    setConsultandoPlaca(placa);
+    try {
+      const punto = await cisternaService.obtenerUltimaTelemetria(placa);
+      setTelemetriaPorPlaca((prev) => ({ ...prev, [placa]: punto }));
+    } catch {
+      setError(`No se pudo consultar la telemetría de ${placa}.`);
+    } finally {
+      setConsultandoPlaca(null);
+    }
+  };
+
+  return (
+    <section className="admin__panel">
+      <div className="admin__panel-header">
+        <button onClick={() => setMostrarForm((v) => !v)}>
+          {mostrarForm ? "Cancelar" : "Registrar cisterna"}
+        </button>
+      </div>
+
+      {mostrarForm && (
+        <form onSubmit={crearCisterna} className="admin__form">
+          <label>
+            Placa
+            <input value={form.placa} onChange={actualizarCampo("placa")} required />
+          </label>
+          <label>
+            Tag RFID
+            <input value={form.rfidTag} onChange={actualizarCampo("rfidTag")} />
+          </label>
+          <label>
+            Empresa de transporte
+            <input
+              value={form.empresaTransporte}
+              onChange={actualizarCampo("empresaTransporte")}
+              required
+            />
+          </label>
+          <label>
+            Capacidad total (L)
+            <input
+              type="number"
+              min="0"
+              value={form.capacidadTotal}
+              onChange={actualizarCampo("capacidadTotal")}
+              required
+            />
+          </label>
+          <label>
+            ID sensor IoT
+            <input value={form.sensorIotId} onChange={actualizarCampo("sensorIotId")} />
+          </label>
+          {errorForm && <p className="error">{errorForm}</p>}
+          <button type="submit" disabled={guardando}>
+            {guardando ? "Guardando…" : "Registrar"}
+          </button>
+        </form>
+      )}
+
+      {error && <p className="error">{error}</p>}
+
+      {cargando || cisternas === null ? (
+        <p>Cargando cisternas…</p>
+      ) : cisternas.length === 0 ? (
+        <p>No hay cisternas registradas.</p>
+      ) : (
+        <table className="admin__tabla">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Empresa</th>
+              <th>Capacidad</th>
+              <th>Estado</th>
+              <th>Última telemetría</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cisternas.map((c) => {
+              const punto = telemetriaPorPlaca[c.placa];
+              return (
+                <tr key={c.placa} className={!c.estaOperativa() ? "fila-critica" : ""}>
+                  <td>{c.placa}</td>
+                  <td>{c.empresaTransporte}</td>
+                  <td>{c.capacidadTotal.toLocaleString("es-BO")} L</td>
+                  <td>{c.estado}</td>
+                  <td>
+                    {punto === undefined ? (
+                      <button
+                        disabled={consultandoPlaca === c.placa}
+                        onClick={() => verUltimaTelemetria(c.placa)}
+                      >
+                        {consultandoPlaca === c.placa ? "Consultando…" : "Ver"}
+                      </button>
+                    ) : punto === null ? (
+                      "Sin registros"
+                    ) : (
+                      <span>
+                        Nivel: {punto.nivelCarga.toLocaleString("es-BO")} ·{" "}
+                        {punto.fechaHora?.toLocaleString("es-BO")}
+                      </span>
+                    )}
+                  </td>
+                  <td className="admin__acciones">
+                    {Object.values(ESTADOS_CISTERNA)
+                      .filter((estado) => estado !== c.estado)
+                      .map((estado) => (
+                        <button
+                          key={estado}
+                          disabled={actualizandoPlaca === c.placa}
+                          onClick={() => cambiarEstado(c, estado)}
+                        >
+                          {estado}
+                        </button>
+                      ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

@@ -1,4 +1,3 @@
-// ENUM real validado en cisternacontroller.js (actualizarEstadoCisterna).
 export const ESTADOS_CISTERNA = Object.freeze({
   OPERATIVA: "OPERATIVA",
   MANTENIMIENTO: "MANTENIMIENTO",
@@ -6,55 +5,13 @@ export const ESTADOS_CISTERNA = Object.freeze({
 });
 
 /**
- * TelemetriaCisterna
- * ------------------------------------------------------------------
- * Un punto de la tabla `registro_telemetria`. `evento` no tiene un
- * ENUM confirmado en el backend (el default del Service es
- * "EN_RUTA"), así que se deja como string libre.
- */
-class TelemetriaCisterna {
-  constructor({
-    idCisterna,
-    latitud,
-    longitud,
-    nivelCarga,
-    flujoInstantaneo = null,
-    velocidadKmh = null,
-    evento = "EN_RUTA",
-    fechaHora = null,
-  } = {}) {
-    this.idCisterna = idCisterna;
-    this.latitud = latitud !== undefined ? Number(latitud) : null;
-    this.longitud = longitud !== undefined ? Number(longitud) : null;
-    this.nivelCarga = nivelCarga !== undefined ? Number(nivelCarga) : null;
-    this.flujoInstantaneo =
-      flujoInstantaneo !== null ? Number(flujoInstantaneo) : null;
-    this.velocidadKmh = velocidadKmh !== null ? Number(velocidadKmh) : null;
-    this.evento = evento;
-    this.fechaHora = fechaHora ? new Date(fechaHora) : null;
-  }
-
-  static fromApi(data) {
-    if (!data) return null;
-    return new TelemetriaCisterna({
-      idCisterna: data.id_cisterna,
-      latitud: data.latitud,
-      longitud: data.longitud,
-      nivelCarga: data.nivel_carga,
-      flujoInstantaneo: data.flujo_instantaneo,
-      velocidadKmh: data.velocidad_kmh,
-      evento: data.evento,
-      fechaHora: data.fecha_hora,
-    });
-  }
-}
-
-/**
  * Cisterna
  * ------------------------------------------------------------------
- * Modelo de una fila de la tabla `cisternas`. No incluye telemetría
- * embebida a propósito: se pide aparte (bajo demanda, por fila) para
- * no disparar N llamadas al listar todas las cisternas.
+ * El backend hace `SELECT * FROM cisternas`, así que puede haber
+ * columnas adicionales que no vimos en el INSERT (ej. fecha de
+ * registro); este modelo solo mapea los campos confirmados por
+ * CisternaService#crear — el resto de columnas simplemente no se
+ * usan en la UI todavía.
  */
 class Cisterna {
   constructor({
@@ -97,5 +54,47 @@ class Cisterna {
   }
 }
 
-export { Cisterna, TelemetriaCisterna };
+/**
+ * RegistroTelemetria
+ * ------------------------------------------------------------------
+ * Mapea una fila de `registro_telemetria` (el último punto conocido
+ * de una cisterna, o el que se acaba de insertar).
+ */
+class RegistroTelemetria {
+  constructor({
+    idCisterna,
+    latitud,
+    longitud,
+    nivelCarga,
+    flujoInstantaneo = null,
+    velocidadKmh = null,
+    evento = null,
+    fechaHora = null,
+  } = {}) {
+    this.idCisterna = idCisterna;
+    this.latitud = Number(latitud);
+    this.longitud = Number(longitud);
+    this.nivelCarga = Number(nivelCarga);
+    this.flujoInstantaneo = flujoInstantaneo != null ? Number(flujoInstantaneo) : null;
+    this.velocidadKmh = velocidadKmh != null ? Number(velocidadKmh) : null;
+    this.evento = evento;
+    this.fechaHora = fechaHora ? new Date(fechaHora) : null;
+  }
+
+  static fromApi(data) {
+    if (!data) return null;
+    return new RegistroTelemetria({
+      idCisterna: data.id_cisterna,
+      latitud: data.latitud,
+      longitud: data.longitud,
+      nivelCarga: data.nivel_carga,
+      flujoInstantaneo: data.flujo_instantaneo,
+      velocidadKmh: data.velocidad_kmh,
+      evento: data.evento,
+      fechaHora: data.fecha_hora,
+    });
+  }
+}
+
+export { Cisterna, RegistroTelemetria };
 export default Cisterna;
