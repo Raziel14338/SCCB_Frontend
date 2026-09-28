@@ -4,11 +4,10 @@ import { useAuth } from "../context/AuthContext";
 /**
  * RutaProtegida
  * ------------------------------------------------------------------
- * Envuelve una pantalla y decide si se puede mostrar según:
- *   1. Si hay una sesión cargando -> muestra estado de carga.
- *   2. Si no hay usuario autenticado -> redirige a "/".
- *   3. Si se pasan `roles` y el usuario no tiene ninguno -> redirige
- *      a una pantalla de "no autorizado" (o a "/" por defecto).
+ * 1. Sesión cargando -> estado de carga.
+ * 2. Sin usuario -> login.
+ * 3. Con `roles` y el usuario no cumple -> /no-autorizado (antes lo
+ *    mandaba al login sin explicación).
  */
 function RutaProtegida({ children, roles = [] }) {
   const { usuario, cargando, estaAutenticado } = useAuth();
@@ -22,7 +21,7 @@ function RutaProtegida({ children, roles = [] }) {
   }
 
   if (roles.length > 0 && !usuario.tieneRol(...roles)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/no-autorizado" replace />;
   }
 
   return children;

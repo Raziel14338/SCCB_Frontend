@@ -8,88 +8,129 @@ const reportesService = new ReportesService();
 /**
  * DashboardPantalla
  * ------------------------------------------------------------------
- * Consume GET /reportes/estadisticas y GET /reportes/cruce-volumetrico
- * en paralelo. Todo el cálculo (tasa de autorización, top de merma)
- * vive en los Models (EstadisticasGenerales, CruceVolumetrico); este
- * componente solo pide los datos y decide qué tarjetas/gráfico pintar.
+ * Consume GET /reportes/estadisticas (por día) y
+ * GET /reportes/cruce-volumetrico (por rango) con filtros de fecha.
+ * Sin fechas, el backend usa "hoy" y todo el historial.
  */
 function DashboardPantalla() {
+  const [fecha, setFecha] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+
   const [estadisticas, setEstadisticas] = useState(null);
   const [cruce, setCruce] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
+  const rangoInvalido = fechaInicio && fechaFin && fechaInicio > fechaFin;
+
   useEffect(() => {
+    if (rangoInvalido) return;
     let activo = true;
+    setCargando(true);
+    setError(null);
 
     Promise.all([
-      reportesService.obtenerEstadisticasGenerales(),
-      reportesService.obtenerCruceVolumetrico(),
+      reportesService.obtenerEstadisticasGenerales(fecha || undefined),
+      reportesService.obtenerCruceVolumetrico({
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
+      }),
     ])
-      .then(([estadisticasData, cruceData]) => {
+      .then(([est, cru]) => {
         if (!activo) return;
-        setEstadisticas(estadisticasData);
-        setCruce(cruceData);
+        setEstadisticas(est);
+        setCruce(cru);
       })
-      .catch(() => activo && setError("No se pudieron cargar las estadísticas."))
+      .catch((err) => activo && setError(err.mensaje || "No se pudieron cargar las estadísticas."))
       .finally(() => activo && setCargando(false));
 
     return () => {
       activo = false;
     };
-  }, []);
+  }, [fecha, fechaInicio, fechaFin, rangoInvalido]);
 
-  if (cargando) return <p>Cargando panel de control…</p>;
-  if (error) return <p className="error">{error}</p>;
+  const limpiar = () => {
+    setFecha("");
+    setFechaInicio("");
+    setFechaFin("");
+  };
 
-  // Top 8 por merma para no saturar el gráfico (el backend ya ordena
-  // DESC por diferencia_litros).
-  const datosGrafico = cruce.filas.slice(0, 8).map((fila) => ({
-    etiqueta: fila.placaCisterna ?? `Cisterna ${fila.idCisterna}`,
-    valor: fila.diferenciaLitros,
-  }));
+  const datosGrafico =
+    cruce?.filas.slice(0, 8).map((f) => ({
+      etiqueta: f.placaCisterna ?? `Cisterna ${f.idCisterna}`,
+      valor: f.diferenciaLitros,
+    })) ?? [];
 
   return (
     <div className="dashboard">
-      <h1>Panel de Control — {estadisticas.fecha}</h1>
+      <div className="dashboard__filtros">
+        <label>
+          Estadísticas del día
+          <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+        </label>
+        <label>
+          Cruce desde
+          <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
+        </label>
+        <label>
+          Cruce hasta
+          <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} />
+        </label>
+        <button type="button" onClick={limpiar}>
+          Limpiar filtros
+        </button>
+      </div>
 
-      <section className="stat-grid">
-        <StatCard
-          etiqueta="Volumen despachado"
-          valor={`${estadisticas.volumenDespachadoLitros.toLocaleString("es-BO")} L`}
-        />
-        <StatCard
-          etiqueta="Alertas críticas abiertas"
-          valor={estadisticas.alertasCriticasAbiertas}
-          tono={estadisticas.alertasCriticasAbiertas > 0 ? "alerta" : "neutro"}
-        />
-        <StatCard etiqueta="Cisternas en ruta" valor={estadisticas.cisternasEnRuta} />
-        <StatCard
-          etiqueta="Despachos del día"
-          valor={estadisticas.despachos.total}
-          detalle={`${estadisticas.despachos.autorizados} autorizados · ${estadisticas.despachos.denegados} denegados (${estadisticas.tasaAutorizacion}%)`}
-        />
-        <StatCard
-          etiqueta="Vehículos bloqueados"
-          valor={estadisticas.vehiculosBloqueados}
-          tono={estadisticas.vehiculosBloqueados > 0 ? "alerta" : "neutro"}
-        />
-      </section>
+      {rangoInvalido && (
+        <p className="error">La fecha de inicio no puede ser posterior a la fecha final.</p>
+      )}
+      {error && <p className="error">{error}</p>}
+      {cargando && <p>Cargando panel de control…</p>}
 
-      <section className="dashboard__cruce">
-        <div className="dashboard__cruce-header">
-          <h2>Cruce volumétrico — mayor merma</h2>
-          <span>
-            {cruce.totalRegistros} registros · {cruce.totalMermaLitros.toLocaleString("es-BO")} L
-            de merma total
-          </span>
-        </div>
-        <BarChart
-          datos={datosGrafico}
-          colorBarra="#f87171"
-          formatoValor={(v) => `${v.toLocaleString("es-BO")} L`}
-        />
-      </section>
+      {!cargando && !error && estadisticas && cruce && (
+        <>
+          <h1>Panel de control — {estadisticas.fecha}</h1>
+
+          <section className="stat-grid">
+            <StatCard
+              etiqueta="Volumen despachado"
+              valor={`${estadisticas.volumenDespachadoLitros.toLocaleString("es-BO")} L`}
+            />
+            <StatCard
+              etiqueta="Alertas críticas abiertas"
+              valor={estadisticas.alertasCriticasAbiertas}
+              tono={estadisticas.alertasCriticasAbiertas > 0 ? "alerta" : "neutro"}
+            />
+            <StatCard etiqueta="Cisternas en ruta" valor={estadisticas.cisternasEnRuta} />
+            <StatCard
+              etiqueta="Despachos del día"
+              valor={estadisticas.despachos.total}
+              detalle={`${estadisticas.despachos.autorizados} autorizados, ${estadisticas.despachos.denegados} denegados (${estadisticas.tasaAutorizacion}%)`}
+            />
+            <StatCard
+              etiqueta="Vehículos bloqueados"
+              valor={estadisticas.vehiculosBloqueados}
+              tono={estadisticas.vehiculosBloqueados > 0 ? "alerta" : "neutro"}
+            />
+          </section>
+
+          <section className="dashboard__cruce">
+            <div className="dashboard__cruce-header">
+              <h2>Cruce volumétrico: mayor merma</h2>
+              <span>
+                {cruce.totalRegistros} registros, {cruce.totalMermaLitros.toLocaleString("es-BO")} L
+                de merma total
+              </span>
+            </div>
+            <BarChart
+              datos={datosGrafico}
+              colorBarra="#f87171"
+              formatoValor={(v) => `${v.toLocaleString("es-BO")} L`}
+            />
+          </section>
+        </>
+      )}
     </div>
   );
 }

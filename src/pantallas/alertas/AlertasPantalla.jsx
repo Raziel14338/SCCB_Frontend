@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import AlertasService from "../../services/AlertasService";
-import { ESTADOS_ALERTA } from "../../models/Alerta";
+import { ESTADOS_ALERTA, SEVERIDADES, TIPOS_ALERTA } from "../../models/Alerta";
 import { useAuth } from "../../context/AuthContext";
 
 const alertasService = new AlertasService();
@@ -17,36 +17,59 @@ const FILTROS_ESTADO = [
   { label: "Todas", value: null },
 ];
 
+const REFERENCIAS = [
+  { campo: "idCisterna", label: "Cisterna (ID)" },
+  { campo: "idVehiculo", label: "Vehículo (ID)" },
+  { campo: "idEstacion", label: "Estación (ID)" },
+];
+
+const FORM_INICIAL = {
+  tipoAlerta: TIPOS_ALERTA[0],
+  severidad: SEVERIDADES.MEDIA,
+  descripcion: "",
+  campoReferencia: "idCisterna",
+  idReferencia: "",
+};
+
 /**
  * AlertasPantalla
  * ------------------------------------------------------------------
- * CRUD de alertas: lista con filtro por estado y permite avanzar el
- * estado de cada una (ABIERTA -> EN_REVISION -> RESUELTA/DESCARTADA).
- * El usuario que resuelve queda registrado como id_usuario_resolucion,
- * tomado de la sesión activa (useAuth), no como input manual.
+ * Lista con filtros por estado y severidad, cambio de estado
+ * (ABIERTA -> EN_REVISION -> RESUELTA/DESCARTADA) y registro manual
+ * de alertas (POST /alertas, exige una referencia: cisterna,
+ * vehículo o estación).
  */
 function AlertasPantalla() {
   const { usuario } = useAuth();
   const [alertas, setAlertas] = useState([]);
   const [filtroIndex, setFiltroIndex] = useState(0);
+  const [severidad, setSeveridad] = useState("");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [actualizandoId, setActualizandoId] = useState(null);
+  const [recarga, setRecarga] = useState(0);
 
-  const cargarAlertas = (estados) => {
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [form, setForm] = useState(FORM_INICIAL);
+  const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState(null);
+
+  useEffect(() => {
+    let activo = true;
     setCargando(true);
     setError(null);
     alertasService
-      .listar({ estados })
-      .then(setAlertas)
-      .catch(() => setError("No se pudieron cargar las alertas."))
-      .finally(() => setCargando(false));
-  };
-
-  useEffect(() => {
-    cargarAlertas(FILTROS_ESTADO[filtroIndex].value);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtroIndex]);
+      .listar({
+        estados: FILTROS_ESTADO[filtroIndex].value,
+        severidades: severidad || undefined,
+      })
+      .then((data) => activo && setAlertas(data))
+      .catch(() => activo && setError("No se pudieron cargar las alertas."))
+      .finally(() => activo && setCargando(false));
+    return () => {
+      activo = false;
+    };
+  }, [filtroIndex, severidad, recarga]);
 
   const cambiarEstado = async (alerta, nuevoEstado) => {
     setActualizandoId(alerta.idAlerta);
@@ -55,13 +78,34 @@ function AlertasPantalla() {
         estado: nuevoEstado,
         idUsuarioResolucion: usuario?.idUsuario,
       });
-      setAlertas((prev) =>
-        prev.map((a) => (a.idAlerta === actualizada.idAlerta ? actualizada : a))
-      );
+      setAlertas((prev) => prev.map((a) => (a.idAlerta === actualizada.idAlerta ? actualizada : a)));
     } catch {
       setError(`No se pudo actualizar la alerta #${alerta.idAlerta}.`);
     } finally {
       setActualizandoId(null);
+    }
+  };
+
+  const campo = (nombre) => (e) => setForm((prev) => ({ ...prev, [nombre]: e.target.value }));
+
+  const registrar = async (evento) => {
+    evento.preventDefault();
+    setGuardando(true);
+    setErrorForm(null);
+    try {
+      await alertasService.registrar({
+        tipoAlerta: form.tipoAlerta,
+        severidad: form.severidad,
+        descripcion: form.descripcion.trim(),
+        [form.campoReferencia]: Number(form.idReferencia),
+      });
+      setForm(FORM_INICIAL);
+      setMostrarForm(false);
+      setRecarga((n) => n + 1);
+    } catch (err) {
+      setErrorForm(err.mensaje || "No se pudo registrar la alerta.");
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -70,6 +114,7 @@ function AlertasPantalla() {
       <div className="alertas__header">
         <h1>Alertas</h1>
         <select
+          aria-label="Filtrar por estado"
           value={filtroIndex}
           onChange={(e) => setFiltroIndex(Number(e.target.value))}
         >
@@ -79,14 +124,82 @@ function AlertasPantalla() {
             </option>
           ))}
         </select>
+        <select
+          aria-label="Filtrar por severidad"
+          value={severidad}
+          onChange={(e) => setSeveridad(e.target.value)}
+        >
+          <option value="">Todas las severidades</option>
+          {Object.values(SEVERIDADES).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <button type="button" onClick={() => setMostrarForm((v) => !v)}>
+          {mostrarForm ? "Cancelar" : "Registrar alerta"}
+        </button>
       </div>
+
+      {mostrarForm && (
+        <form className="alertas__form" onSubmit={registrar}>
+          <label>
+            Tipo
+            <select value={form.tipoAlerta} onChange={campo("tipoAlerta")}>
+              {TIPOS_ALERTA.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Severidad
+            <select value={form.severidad} onChange={campo("severidad")}>
+              {Object.values(SEVERIDADES).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Referencia
+            <select value={form.campoReferencia} onChange={campo("campoReferencia")}>
+              {REFERENCIAS.map((r) => (
+                <option key={r.campo} value={r.campo}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            ID
+            <input
+              type="number"
+              min="1"
+              value={form.idReferencia}
+              onChange={campo("idReferencia")}
+              required
+            />
+          </label>
+          <label className="alertas__form-descripcion">
+            Descripción
+            <textarea value={form.descripcion} onChange={campo("descripcion")} required />
+          </label>
+          {errorForm && <p className="error">{errorForm}</p>}
+          <button type="submit" disabled={guardando}>
+            {guardando ? "Guardando…" : "Guardar alerta"}
+          </button>
+        </form>
+      )}
 
       {error && <p className="error">{error}</p>}
 
       {cargando ? (
         <p>Cargando alertas…</p>
       ) : alertas.length === 0 ? (
-        <p>No hay alertas para este filtro.</p>
+        <p>No hay alertas con estos filtros.</p>
       ) : (
         <table className="alertas__tabla">
           <thead>

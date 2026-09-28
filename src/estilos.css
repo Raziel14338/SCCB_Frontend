@@ -1,0 +1,78 @@
+/* Estilos para lo agregado en esta ronda. Importa este archivo en index.js:
+   import "./estilos-nuevos.css";
+   Ajusta colores a tu tema; si ya tienes clases equivalentes, borra las duplicadas. */
+
+.app-header__nav a {
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.app-header__nav a.activo {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin: 1rem 0;
+  border-bottom: 1px solid #cbd5e1;
+}
+.tabs__tab {
+  padding: 0.5rem 1rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.tabs__tab--activa {
+  font-weight: 600;
+  border-bottom: 2px solid currentColor;
+}
+
+.pagina-estado {
+  max-width: 32rem;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+.dashboard__filtros,
+.alertas__header,
+.monitoreo__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.alertas__form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.alertas__form-descripcion {
+  grid-column: 1 / -1;
+}
+
+.monitoreo__mapa {
+  height: 26rem;
+  width: 100%;
+  border-radius: 6px;
+}
+.monitoreo__detalle {
+  margin-top: 1rem;
+}
+.monitoreo__linea {
+  width: 100%;
+  max-width: 32rem;
+  height: auto;
+  color: #2563eb;
+}
+
+@media (max-width: 640px) {
+  .monitoreo__mapa {
+    height: 18rem;
+  }
+}

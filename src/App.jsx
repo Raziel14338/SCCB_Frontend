@@ -5,13 +5,13 @@ import MainLayout from "./layouts/MainLayout";
 import { ROLES } from "./models/Usuario";
 
 import LoginPantalla from "./pantallas/LoginPantalla";
+import NoAutorizado from "./pantallas/Noautorizado";
+import NoEncontrada from "./pantallas/Noencontrada";
 import DashboardPantalla from "./pantallas/dashboard/DasboardPantalla";
 import AlertasPantalla from "./pantallas/alertas/AlertasPantalla";
-
-// Pantallas de los módulos 2+. Por ahora son placeholders: se
-// reemplazan por las pantallas reales a medida que avanzamos módulo
-// por módulo, sin tocar la estructura de rutas de abajo.
+import MonitoreoPantalla from "./pantallas/monitoreo/Monitoreopantalla";
 import AdminDashboard from "./pantallas/admin/Admindasboard";
+import InfraestructuraDashboard from "./pantallas/infraestructura/infraestructuraDashboard";
 import FiscalizacionDashboard from "./pantallas/fiscalizacion/Fiscalizaciondashboard";
 import GestionCupos from "./pantallas/fiscalizacion/GestionCupos";
 import OperadorDashboard from "./pantallas/operador/Operadordashboard";
@@ -19,26 +19,18 @@ import OperadorDashboard from "./pantallas/operador/Operadordashboard";
 /**
  * App
  * ------------------------------------------------------------------
- * Define el árbol de rutas de toda la aplicación. Toda ruta que deba
- * mostrarse dentro del shell (header + logout) cuelga de la ruta
- * padre que renderiza <MainLayout />, que a su vez está protegida
- * por <RutaProtegida> (basta con estar autenticado; el control por
- * rol específico se hace en cada Route hija si hace falta).
- *
- * Cada módulo nuevo (Flota, Infraestructura, Operaciones, Telemetría)
- * agrega sus rutas como hijas de <MainLayout />, envueltas en su
- * propio <RutaProtegida roles={[...]}> cuando el acceso deba
- * restringirse a un rol puntual.
+ * Árbol de rutas. Todo lo que cuelga de <MainLayout /> comparte el
+ * header con el menú por rol (ver config/navegacion.js). El control
+ * fino por rol se hace con <RutaProtegida roles={[...]}>.
  */
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* ── Pública ── */}
           <Route path="/" element={<LoginPantalla />} />
+          <Route path="/no-autorizado" element={<NoAutorizado />} />
 
-          {/* ── Shell autenticado (header + logout vía MainLayout) ── */}
           <Route
             element={
               <RutaProtegida>
@@ -46,11 +38,12 @@ function App() {
               </RutaProtegida>
             }
           >
-            {/* ── Módulo 2: accesible a cualquier usuario autenticado ── */}
+            {/* Cualquier usuario autenticado */}
             <Route path="/dashboard" element={<DashboardPantalla />} />
+            <Route path="/monitoreo" element={<MonitoreoPantalla />} />
             <Route path="/alertas" element={<AlertasPantalla />} />
 
-            {/* ── ADMIN_RED ── */}
+            {/* ADMIN_RED */}
             <Route
               path="/admin/dashboard"
               element={
@@ -59,8 +52,16 @@ function App() {
                 </RutaProtegida>
               }
             />
+            <Route
+              path="/infraestructura"
+              element={
+                <RutaProtegida roles={[ROLES.ADMIN_RED]}>
+                  <InfraestructuraDashboard />
+                </RutaProtegida>
+              }
+            />
 
-            {/* ── FISCAL_ANH ── */}
+            {/* FISCAL_ANH */}
             <Route
               path="/fiscalizacion/dashboard"
               element={
@@ -78,7 +79,7 @@ function App() {
               }
             />
 
-            {/* ── OPERADOR_YPFB ── */}
+            {/* OPERADOR_YPFB */}
             <Route
               path="/operador/dashboard"
               element={
@@ -88,6 +89,8 @@ function App() {
               }
             />
           </Route>
+
+          <Route path="*" element={<NoEncontrada />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

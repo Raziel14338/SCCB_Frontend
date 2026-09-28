@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import InfraestructuraService from "../../services/Infraestructuraservice";
-import InventarioService from "../../services/InventarioService";
+import InventarioService from "../../services/Invetarioservice";
 import { ESTADOS_CENTRO_ACOPIO } from "../../models/CentroAcopio";
 import { ESTADOS_ESTACION } from "../../models/Estacion";
 import { TIPOS_COMBUSTIBLE } from "../../models/Surtidor";

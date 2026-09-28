@@ -1,31 +1,34 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { rutaInicioParaRol } from "../config/Navegacion";
 
 /**
  * LoginPantalla
  * ------------------------------------------------------------------
- * Ejemplo de cómo un componente de UI consume el AuthContext.
- * El componente solo maneja estado de formulario; toda la lógica
- * de negocio (validar credenciales, guardar token) vive en
- * AuthService, a través de useAuth().login().
+ * Tras el login lleva a cada usuario a su panel según el rol. Si ya
+ * hay sesión activa, redirige sin mostrar el formulario.
  */
 function LoginPantalla() {
-  const { login, error } = useAuth();
+  const { login, error, usuario, cargando } = useAuth();
   const navigate = useNavigate();
 
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [enviando, setEnviando] = useState(false);
 
+  if (!cargando && usuario) {
+    return <Navigate to={rutaInicioParaRol(usuario.nombreRol)} replace />;
+  }
+
   const handleSubmit = async (evento) => {
     evento.preventDefault();
     setEnviando(true);
     try {
-      await login(nombreUsuario, password);
-      navigate("/dashboard");
+      const logueado = await login(nombreUsuario, password);
+      navigate(rutaInicioParaRol(logueado.nombreRol), { replace: true });
     } catch {
-      // El mensaje de error ya quedó disponible en `error` desde el contexto
+      // El mensaje ya quedó en `error` desde el contexto
     } finally {
       setEnviando(false);
     }
@@ -41,6 +44,7 @@ function LoginPantalla() {
           type="text"
           value={nombreUsuario}
           onChange={(e) => setNombreUsuario(e.target.value)}
+          autoComplete="username"
           required
         />
       </label>
@@ -51,6 +55,7 @@ function LoginPantalla() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
         />
       </label>
