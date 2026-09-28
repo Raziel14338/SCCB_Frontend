@@ -1,78 +1,712 @@
-/* Estilos para lo agregado en esta ronda. Importa este archivo en index.js:
-   import "./estilos-nuevos.css";
-   Ajusta colores a tu tema; si ya tienes clases equivalentes, borra las duplicadas. */
+@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap");
 
+/* ==================================================================
+   Sistema de diseño: consola de control de combustibles
+   Importa este archivo en index.js:  import "./estilos.css";
+   (borra estilos-nuevos.css: este archivo lo reemplaza)
+   ================================================================== */
+
+:root {
+  --petroleo: #12343b;
+  --petroleo-2: #1c4b55;
+  --papel: #f3f5f4;
+  --superficie: #ffffff;
+  --tinta: #17242a;
+  --acero: #5b6b72;
+  --linea: #d5dcdd;
+  --linea-fuerte: #a9b6b9;
+  --ambar: #e09f1f;
+  --verde: #1e8e5a;
+  --verde-fondo: #e4f4ec;
+  --rojo: #c7372f;
+  --rojo-fondo: #fbe9e7;
+  --azul: #2f6f9f;
+
+  --fuente: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --fuente-titulo: "Barlow Condensed", "Arial Narrow", "Barlow", sans-serif;
+
+  --radio: 3px;
+  --espacio: 1rem;
+}
+
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fuente);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fuente-titulo);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
+  letter-spacing: 0.01em;
+}
+h1 {
+  font-size: 2.1rem;
+}
+h2 {
+  font-size: 1.45rem;
+}
+h3 {
+  font-size: 1.15rem;
+}
+
+p {
+  margin: 0 0 0.75rem;
+}
+
+a {
+  color: var(--azul);
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ambar);
+  outline-offset: 2px;
+}
+
+/* ---------- Controles ---------- */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--acero);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--tinta);
+  background: var(--superficie);
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio);
+  padding: 0.5rem 0.65rem;
+  min-height: 2.5rem;
+}
+textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+input[type="checkbox"] {
+  min-height: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--petroleo);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--petroleo);
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--petroleo);
+  border: 1px solid var(--petroleo);
+  border-radius: var(--radio);
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+button:hover:not(:disabled) {
+  background: var(--petroleo-2);
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Botones dentro de tablas: secundarios, más pequeños */
+td button,
+.admin__acciones button,
+.alertas__acciones button {
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.85rem;
+  color: var(--petroleo);
+  background: transparent;
+  border-color: var(--linea-fuerte);
+}
+td button:hover:not(:disabled),
+.admin__acciones button:hover:not(:disabled),
+.alertas__acciones button:hover:not(:disabled) {
+  background: var(--papel);
+  border-color: var(--petroleo);
+}
+
+/* ---------- Mensajes ---------- */
+.error,
+.login-error {
+  color: var(--rojo);
+  background: var(--rojo-fondo);
+  border-left: 4px solid var(--rojo);
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 var(--radio) var(--radio) 0;
+  font-weight: 500;
+}
+.exito {
+  color: var(--verde);
+  background: var(--verde-fondo);
+  border-left: 4px solid var(--verde);
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 var(--radio) var(--radio) 0;
+  font-weight: 500;
+}
+.cargando-sesion {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--acero);
+}
+
+/* ---------- Estructura de la app ---------- */
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1100; /* por encima de los paneles de Leaflet */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  padding: 0.6rem 1.5rem;
+  background: var(--petroleo);
+  color: #fff;
+  border-bottom: 3px solid var(--ambar);
+}
+.app-header__marca {
+  font-family: var(--fuente-titulo);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.app-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+  flex: 1 1 auto;
+}
 .app-header__nav a {
-  padding: 0.35rem 0.6rem;
-  border-radius: 4px;
+  color: #d6e3e5;
   text-decoration: none;
+  font-weight: 500;
+  padding: 0.4rem 0.6rem;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.app-header__nav a:hover {
+  color: #fff;
 }
 .app-header__nav a.activo {
+  color: #fff;
+  border-bottom-color: var(--ambar);
+}
+.app-header__usuario {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas: "nombre salir" "rol salir";
+  column-gap: 0.9rem;
+  align-items: center;
+}
+.app-header__nombre {
+  grid-area: nombre;
   font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  line-height: 1.2;
+}
+.app-header__rol {
+  grid-area: rol;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: #b7c9cc;
+}
+.app-header__logout {
+  grid-area: salir;
+}
+.app-header__logout {
+  min-height: 2rem;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.85rem;
+  background: transparent;
+  border-color: #7f9a9f;
+  color: #fff;
+}
+.app-header__logout:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.tabs {
-  display: flex;
-  gap: 0.25rem;
-  margin: 1rem 0;
-  border-bottom: 1px solid #cbd5e1;
-}
-.tabs__tab {
-  padding: 0.5rem 1rem;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-.tabs__tab--activa {
-  font-weight: 600;
-  border-bottom: 2px solid currentColor;
+.app-content {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 3rem;
 }
 
 .pagina-estado {
-  max-width: 32rem;
-  margin: 4rem auto;
-  padding: 0 1rem;
+  max-width: 34rem;
+  margin: 5rem auto;
+  padding: 0 1.5rem;
 }
 
-.dashboard__filtros,
+/* ---------- Login ---------- */
+body:has(.login-form) {
+  background: var(--petroleo);
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: min(24rem, calc(100% - 2rem));
+  margin: 12vh auto 0;
+  padding: 2rem;
+  background: var(--superficie);
+  border-top: 5px solid var(--ambar);
+  border-radius: var(--radio);
+}
+.login-form::before {
+  content: "Gestión de Hidrocarburos";
+  font-family: var(--fuente-titulo);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--acero);
+}
+.login-form h1 {
+  margin-top: -0.6rem;
+  margin-bottom: 0.25rem;
+}
+.login-form button {
+  margin-top: 0.5rem;
+}
+
+/* ---------- Franja de métricas ---------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  margin-bottom: 2rem;
+}
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1rem 1.25rem;
+  border-left: 1px solid var(--linea);
+  border-top: 3px solid transparent;
+}
+.stat-card:first-child {
+  border-left: 0;
+}
+.stat-card__etiqueta {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--acero);
+}
+.stat-card__valor {
+  font-family: var(--fuente-titulo);
+  font-size: 2.3rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.stat-card__detalle {
+  font-size: 0.85rem;
+  color: var(--acero);
+}
+.stat-card--alerta {
+  border-top-color: var(--rojo);
+  background: var(--rojo-fondo);
+}
+.stat-card--alerta .stat-card__valor {
+  color: var(--rojo);
+}
+
+/* ---------- Gráfico de barras ---------- */
+.bar-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-bottom: 2px solid var(--tinta);
+}
+.bar-chart__columna {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  position: relative;
+  padding-bottom: 1.6rem;
+}
+.bar-chart__valor {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+.bar-chart__barra {
+  align-self: end;
+  width: 56%;
+  margin-inline: auto;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+.bar-chart__etiqueta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--acero);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-chart__vacio {
+  color: var(--acero);
+}
+
+/* ---------- Encabezados de sección ---------- */
 .alertas__header,
-.monitoreo__header {
+.cisternas__header,
+.despachos__header,
+.admin__header,
+.infraestructura__header,
+.fiscalizacion__header,
+.monitoreo__header,
+.dashboard__cruce-header,
+.admin__panel-header,
+.infraestructura__panel-header,
+.gestion-cupos__vigente-header {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: end;
+  align-items: center;
+  gap: 0.75rem 1rem;
   margin-bottom: 1rem;
+}
+.alertas__header h1,
+.admin__header h1,
+.infraestructura__header h1,
+.fiscalizacion__header h1,
+.monitoreo__header h1 {
+  margin: 0;
+  margin-right: auto;
+}
+.cisternas__header h2,
+.despachos__header h2,
+.dashboard__cruce-header h2,
+.admin__panel-header h2,
+.infraestructura__panel-header h2,
+.gestion-cupos__vigente-header h2 {
+  margin: 0;
+  margin-right: auto;
+}
+.dashboard__cruce-header span {
+  color: var(--acero);
 }
 
-.alertas__form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+/* ---------- Filtros y formularios ---------- */
+.dashboard__filtros,
+.gestion-cupos__buscador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
 }
-.alertas__form-descripcion {
+
+.alertas__form,
+.admin__form,
+.infraestructura__form,
+.gestion-cupos__form,
+.despacho-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.9rem 1rem;
+  align-items: end;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-left: 4px solid var(--petroleo);
+  border-radius: var(--radio);
+}
+.alertas__form-descripcion,
+.despacho-form h2,
+.despacho-form .semaforo,
+.despacho-form .error,
+.despacho-form .exito,
+.gestion-cupos__form .error,
+.admin__form .error,
+.infraestructura__form .error,
+.alertas__form .error {
   grid-column: 1 / -1;
 }
+.despacho-form h2 {
+  margin: 0;
+}
+.despacho-form label:has(.despacho-form__rfid) {
+  grid-column: 1 / -1;
+}
+.despacho-form__rfid {
+  display: flex;
+  gap: 0.5rem;
+}
+.despacho-form__rfid input {
+  flex: 1;
+  min-width: 0;
+}
+.infraestructura__checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+.infraestructura__aviso {
+  padding: 0.6rem 0.9rem;
+  color: #7a5200;
+  background: #fdf3dc;
+  border-left: 4px solid var(--ambar);
+  border-radius: 0 var(--radio) var(--radio) 0;
+}
 
-.monitoreo__mapa {
-  height: 26rem;
+/* ---------- Pestañas ---------- */
+.tabs,
+.admin__tabs,
+.infraestructura__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0 0 1.5rem;
+  border-bottom: 1px solid var(--linea-fuerte);
+}
+.tabs__tab,
+.admin__tab,
+.infraestructura__tab {
+  color: var(--acero);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  margin-bottom: -1px;
+  padding: 0.6rem 1.1rem;
+  font-size: 1.05rem;
+}
+.tabs__tab:hover:not(:disabled),
+.admin__tab:hover:not(:disabled),
+.infraestructura__tab:hover:not(:disabled) {
+  color: var(--tinta);
+  background: transparent;
+}
+.tabs__tab--activa,
+.admin__tab--activa,
+.infraestructura__tab--activa {
+  color: var(--tinta);
+  border-bottom-color: var(--ambar);
+}
+
+/* ---------- Tablas ---------- */
+table {
   width: 100%;
-  border-radius: 6px;
+  border-collapse: collapse;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  font-size: 0.95rem;
+}
+th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--acero);
+  padding: 0.6rem 0.85rem;
+  border-bottom: 2px solid var(--tinta);
+  white-space: nowrap;
+}
+td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: middle;
+}
+tbody tr:hover {
+  background: #f7f9f8;
+}
+
+.fila-critica,
+.fila-merma-alta,
+.fila-denegada {
+  background: var(--rojo-fondo);
+  box-shadow: inset 4px 0 0 var(--rojo);
+}
+.fila-critica:hover,
+.fila-merma-alta:hover,
+.fila-denegada:hover {
+  background: #f8ded9;
+}
+.fila-no-operativa {
+  color: var(--acero);
+  box-shadow: inset 4px 0 0 var(--ambar);
+}
+.fila-entrada {
+  box-shadow: inset 4px 0 0 var(--verde);
+}
+.fila-salida {
+  box-shadow: inset 4px 0 0 var(--azul);
+}
+.fila-telemetria td {
+  background: var(--papel);
+}
+.telemetria-detalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin__acciones button,
+.alertas__acciones button {
+  margin: 0.15rem 0.35rem 0.15rem 0;
+}
+
+/* Secciones tipo hoja: separación por regla, sin tarjeta */
+.dashboard__cruce,
+.fiscalizacion__cruce,
+.fiscalizacion__detalle,
+.gestion-cupos__historial {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--linea-fuerte);
+}
+
+/* ---------- Gestión de cupos ---------- */
+.gestion-cupos__tarjeta-vigente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-left: 4px solid var(--verde);
+  border-radius: var(--radio);
+}
+.gestion-cupos__tarjeta-vigente strong {
+  font-family: var(--fuente-titulo);
+  font-size: 1.5rem;
+}
+
+/* ---------- Despacho: el semáforo es la pieza central ---------- */
+.panel-despacho__semaforo,
+.panel-despacho__resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 1.25rem 0;
+  padding: 1.25rem 1.5rem;
+  font-size: 1.1rem;
+  border-left: 10px solid;
+  border-radius: 0 var(--radio) var(--radio) 0;
+}
+.panel-despacho__semaforo--verde,
+.panel-despacho__resultado--autorizado {
+  background: var(--verde-fondo);
+  border-left-color: var(--verde);
+}
+.panel-despacho__semaforo--rojo,
+.panel-despacho__resultado--denegado {
+  background: var(--rojo-fondo);
+  border-left-color: var(--rojo);
+}
+.panel-despacho__resultado strong {
+  font-family: var(--fuente-titulo);
+  font-size: 1.9rem;
+}
+
+.semaforo {
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: var(--rojo-fondo);
+  border-left: 8px solid var(--rojo);
+  border-radius: 0 var(--radio) var(--radio) 0;
+}
+.semaforo--ok {
+  background: var(--verde-fondo);
+  border-left-color: var(--verde);
+}
+.semaforo--bloqueado {
+  background: var(--rojo-fondo);
+  border-left-color: var(--rojo);
+}
+
+/* ---------- Monitoreo ---------- */
+.monitoreo__mapa {
+  height: 28rem;
+  width: 100%;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--radio);
+  z-index: 0;
 }
 .monitoreo__detalle {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--linea-fuerte);
 }
 .monitoreo__linea {
   width: 100%;
-  max-width: 32rem;
+  max-width: 34rem;
   height: auto;
-  color: #2563eb;
+  color: var(--azul);
 }
 
-@media (max-width: 640px) {
+/* ---------- Adaptación a pantallas pequeñas ---------- */
+@media (max-width: 800px) {
+  .app-header {
+    padding: 0.6rem 1rem;
+  }
+  .app-content {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+  h1 {
+    font-size: 1.75rem;
+  }
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+  .stat-card {
+    border-left: 0;
+    border-top: 1px solid var(--linea);
+  }
   .monitoreo__mapa {
-    height: 18rem;
+    height: 19rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
   }
 }
