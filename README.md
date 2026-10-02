@@ -1,70 +1,68 @@
-# Getting Started with Create React App
+# Guía de Instalación del Front-end
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Esta guía proporciona instrucciones paso a paso para configurar y ejecutar el Front-end del proyecto.
 
-## Available Scripts
+## Prerrequisitos
 
-In the project directory, you can run:
+<h2>1. Instalar Node.js</h2>
 
-### `npm start`
+   - Descarga e instala Node.js desde [https://nodejs.org/es](https://nodejs.org/es).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+>[!IMPORTANT]
+>Espera a que se instale por completo el node js
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+   - Verifica la instalación ejecutando:
+     ```bash
+     node -v
+     npm -v
+     ```
 
-### `npm test`
+<h2>2. Descargar y configurar el back-end</h2>
+     
+>[!NOTE]
+>Ve la documentacion de instalacion y configuracion del back-end en el siguiente linck: https://github.com/jazielSlayer/SAFT-Bakent
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  - Clona el repositorio del bakent:
 
-### `npm run build`
+     ```bash
+     git clone https://github.com/jazielSlayer/SAFT-Bakent.git
+     ```
+     
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+>[!IMPORTANT]
+>Importante es nesesario que la instalacion del back-end se aga de forma como se ecplica en la documentacion
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Pasos de Instalación
 
-### `npm run eject`
+<h2>3. Clonar el Repositorio</h2>
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   - Clona el repositorio del proyecto usando:
+   
+   ```bash
+   git clone https://github.com/jazielSlayer/Frontend-SAT.git
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+<h2>4. Instalar Dependencias</h2>
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+   - Navega al directorio del proyecto e instala las dependencias requeridas:
+   
+   ```bash
+   npm install
+   ```
+<h2>5. Ejecutar el proyecto</h2>
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+   - Navega al directorio del proyecto y ejecuta el proyecto con el siguiente comando:
 
-## Learn More
+   ```bash
+   npm start
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+>[!NOTE]
+>El proyecto se ejecutara en el `localhost:3000`
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+>[!IMPORTANT]
+>Si el proyecto presenta alguna falla al momento de hacerlo correr verificar si se hiso correctamente los pasos anteriores, verificar si no hay programas 
