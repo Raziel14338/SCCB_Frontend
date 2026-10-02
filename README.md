@@ -25,7 +25,7 @@ Esta guía proporciona instrucciones paso a paso para configurar y ejecutar el F
   - Clona el repositorio del bakent:
 
      ```bash
-     git clone https://github.com/jazielSlayer/SAFT-Bakent.git
+     git clone https://github.com/Raziel14338/SCCB_Bakend.git
      ```
      
 
@@ -41,7 +41,7 @@ Esta guía proporciona instrucciones paso a paso para configurar y ejecutar el F
    - Clona el repositorio del proyecto usando:
    
    ```bash
-   git clone https://github.com/jazielSlayer/Frontend-SAT.git
+   git clone https://github.com/Raziel14338/SCCB_Frontend.git
    ```
 
 <h2>4. Instalar Dependencias</h2>
